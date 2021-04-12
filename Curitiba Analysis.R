@@ -9,7 +9,7 @@ data(Curitiba)
 ## Simulate data using NSUM package and basic R functions
 # y = as.matrix(read.csv("Curitiba_y.csv", header = F))
 # x_cov = as.matrix(read.csv("Curitiba_x_int_cov.csv", header = F))
-x_cov_teo = x_cov[,-1]
+# x_cov_teo = x_cov[,-1]
 y = with(Curitiba, nsum.simulate(500, known, unknown, N, model = "degree",
                              mu, sigma))$y
 x_cov_teo = cbind(rnorm(500), rbinom(500, 1, 0.3), rbinom(500, 1, 0.8),
@@ -274,7 +274,7 @@ teo.basic.tau = c(teo.basic.post[[1]][,503], teo.basic.post[[2]][,503])
 ## Calculate network size
 teo.basic.network.size = rep(NA, N.i)
 for(i in 1:N.i){
-  teo.basic.network.size[i] = mean(teo.basic.lambda * teo.basic.alpha[,i])*5E6
+  teo.basic.network.size[i] = mean(teo.basic.lambda * teo.basic.alpha[,i])*Curitiba$N
 }
 
 
@@ -386,7 +386,7 @@ teo.barrier.tau = c(teo.barrier.post[[1]][,589], teo.barrier.post[[2]][,589])
 ## Calculate network size
 teo.barrier.network.size = rep(NA, N.i)
 for(i in 1:N.i){
-  teo.barrier.network.size[i] = mean(teo.barrier.lambda * teo.barrier.alpha[,i])*5E6
+  teo.barrier.network.size[i] = mean(teo.barrier.lambda * teo.barrier.alpha[,i])*Curitiba$N
 }
 
 
