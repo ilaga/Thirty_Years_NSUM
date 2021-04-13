@@ -49,10 +49,10 @@ omegas = matrix(NA, nrow = N.mc, ncol = N.k)
 mu.alpha = mu.beta = sigma.sq.alpha = sigma.sq.beta = rep(NA, N.mc)
 C1 = C2 = C = NA
 
-alphas[1,] = 0
-betas[1,] = 0
-omegas[1,] = 1.5
-mu.alpha[1] = mu.beta[1] = sigma.sq.alpha[1] = sigma.sq.beta[1] = 1
+alphas[1,] = rnorm(N.i, sd = 2)
+betas[1,] = rnorm(N.k, sd = 2)
+omegas[1,] = 20
+mu.alpha[1] = mu.beta[1] = sigma.sq.alpha[1] = sigma.sq.beta[1] = 5
 
 
 for(ind in 2:N.mc){
@@ -61,10 +61,10 @@ for(ind in 2:N.mc){
     alpha.prop = alphas[ind - 1,i] + rnorm(1, 0, 0.4)
     zeta.prop = exp(alpha.prop + betas[ind - 1,]) / (omegas[ind - 1,] - 1)
     zeta.old = exp(alphas[ind - 1, i] + betas[ind - 1,]) / (omegas[ind - 1,] - 1)
-    sum1 = sum(lgamma(y[i,] + zeta.prop) - lgamma(zeta.prop) - zeta.prop * log(omegas[ind - 1,]) +
-                 dnorm(alpha.prop, mu.alpha[ind - 1], sqrt(sigma.sq.alpha[ind - 1])))
-    sum2 = sum(lgamma(y[i,] + zeta.old) - lgamma(zeta.old) - zeta.old * log(omegas[ind - 1,]) +
-                 dnorm(alphas[ind - 1,i], mu.alpha[ind - 1], sqrt(sigma.sq.alpha[ind - 1])))
+    sum1 = sum(lgamma(y[i,] + zeta.prop) - lgamma(zeta.prop) - zeta.prop * log(omegas[ind - 1,])) +
+                 dnorm(alpha.prop, mu.alpha[ind - 1], sqrt(sigma.sq.alpha[ind - 1]), log = T)
+    sum2 = sum(lgamma(y[i,] + zeta.old) - lgamma(zeta.old) - zeta.old * log(omegas[ind - 1,])) +
+                 dnorm(alphas[ind - 1,i], mu.alpha[ind - 1], sqrt(sigma.sq.alpha[ind - 1]), log = T)
     prob.acc = exp(sum1 - sum2)
     
     if(prob.acc > runif(1)){
@@ -76,13 +76,13 @@ for(ind in 2:N.mc){
   
   ## Step 2
   for(k in 1:N.k){
-    beta.prop = betas[ind - 1,k] + rnorm(1, 0, 0.05)
+    beta.prop = betas[ind - 1,k] + rnorm(1, 0, 0.2)
     zeta.prop = exp(alphas[ind, ] + beta.prop) / (omegas[ind - 1,k] - 1)
     zeta.old = exp(alphas[ind, ] + betas[ind - 1,k]) / (omegas[ind - 1,k] - 1)
-    sum1 = sum(lgamma(y[,k] + zeta.prop) - lgamma(zeta.prop) - zeta.prop * log(omegas[ind - 1,k]) +
-                 dnorm(beta.prop, mu.beta[ind - 1], sqrt(sigma.sq.beta[ind - 1])))
-    sum2 = sum(lgamma(y[,k] + zeta.old) - lgamma(zeta.old) - zeta.old * log(omegas[ind - 1,k]) +
-                 dnorm(betas[ind - 1,k], mu.beta[ind - 1], sqrt(sigma.sq.beta[ind - 1])))
+    sum1 = sum(lgamma(y[,k] + zeta.prop) - lgamma(zeta.prop) - zeta.prop * log(omegas[ind - 1,k])) +
+                 dnorm(beta.prop, mu.beta[ind - 1], sqrt(sigma.sq.beta[ind - 1]), log = T)
+    sum2 = sum(lgamma(y[,k] + zeta.old) - lgamma(zeta.old) - zeta.old * log(omegas[ind - 1,k])) +
+                 dnorm(betas[ind - 1,k], mu.beta[ind - 1], sqrt(sigma.sq.beta[ind - 1]), log = T)
     prob.acc = exp(sum1 - sum2)
     
     if(prob.acc > runif(1)){
@@ -105,16 +105,13 @@ for(ind in 2:N.mc){
   mu.beta[ind] = rnorm(1, mu.beta.hat, sqrt(sigma.sq.beta[ind - 1] / 2))
   
   ## Step 6
-  ## Sampling is poor if using inverse-chi squared distribution
-  ## Instead put weak prior of sigma.sq.beta
-  # sigma.beta.hat = mean((betas[ind,] - mu.beta[ind])^2)
-  # sigma.sq.beta[ind] = rinvchisq(1, N.k - 1, sigma.beta.hat)
-  sigma.sq.beta[ind] = 10
+  sigma.beta.hat = mean((betas[ind,] - mu.beta[ind])^2)
+  sigma.sq.beta[ind] = rinvchisq(1, N.k - 1, sigma.beta.hat)
   
   
   ## Step 7
   for(k in 1:N.k){
-    omega.prop = omegas[ind - 1,k] + rnorm(1, 0, 0.1)
+    omega.prop = omegas[ind - 1,k] + rnorm(1, 0, 0.2)
     if(omega.prop > 1){
       zeta.prop = exp(alphas[ind, ] + betas[ind,k]) / (omega.prop - 1)
       zeta.old = exp(alphas[ind, ] + betas[ind,k]) / (omegas[ind - 1,k] - 1)
@@ -152,6 +149,7 @@ alphas = alphas[-c(1:1000),]
 betas = betas[-c(1:1000),]
 alphas = alphas[seq(1, nrow(alphas), by = 10),]
 betas = betas[seq(1, nrow(betas), by = 10),]
+
 
 
 
